@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 import arrow from "./images/arrow.png"
 import "./style.css"
-
 
 
 export function VoiceDetector() {
 
     const [borderColor, setBorderColor] = useState("yellow");
+
+    const [lastrecoringTimestamp, setLastrecordingTimestamp] = useState(0)
 
     function changeBorderColor(volume) {
         if (volume <= 25){
@@ -23,13 +25,30 @@ export function VoiceDetector() {
         }
         // console.log(volume, borderColor)
         }
-    
 
 
+    function saveVolume(volume){
+        // Save Volume to the database using post request
+        // records are saved every 5 seconds
+
+        let now = Date.now()
+        console.log(now , "-", lastrecoringTimestamp, "=>> ",parseInt((now - lastrecoringTimestamp), 10), (parseInt((now - lastrecoringTimestamp), 10) > 30000) )
+        if (parseInt((now - lastrecoringTimestamp), 10) > 30000){
+            axios.post('http://127.0.0.1:8080', { volume: volume })
+            .then(response => {
+                console.log('Volume data sent successfully:', response.data);
+            })
+            .catch(error => {
+                console.error('Error sending volume data:', error);
+            });
+            setLastrecordingTimestamp(now)
+        }
+    }
 
     useEffect(() => {
 
-        navigator.mediaDevices.getUserMedia({ audio: true })
+
+    navigator.mediaDevices.getUserMedia({ audio: true })
             .then(stream => {
                 const audio = new AudioContext();
                 const analyzer = audio.createAnalyser();
@@ -42,40 +61,33 @@ export function VoiceDetector() {
 
                 microphone.connect(analyzer);
 
-                function noiseDettector() {
+                function noiseDetector() {
                     analyzer.getByteFrequencyData(audioData);
-                    // console.log("length: "+audioData.length)
+
                     let volume = (audioData.reduce((x, z) => x + z) / audioData.length) * 2;
 
-                    // volume = 64 + 90 + 90
                     let per = Math.min(((volume * 100) / 255).toFixed(0), 100) 
-                    // per = 100
                     let deg = ((per / 100) * 180)
 
-                    // console.log("vol: ", volume)
                     volume = volume.toFixed(0);
                     volume = Math.min(volume, 100)
-                    // console.log("TO vol: ", volume)
 
                     let volumePerHundred = (volume * 180 / 150) + "deg";
                     let sound = (volume / 15 * 10).toFixed(0);
 
-                    // document.getElementById("volume").innerHTML = sound + "%";
                     document.getElementById("volume").innerHTML = per + "%";
 
                     document.documentElement.style.setProperty("--noise", deg+"deg");
-                    // document.documentElement.style.setProperty("--noise", "90deg");
-
 
                     changeBorderColor(per);
-                    console.log("volume: ", volume, "per: ", per, "deg: ", deg, "vol hund: ", volumePerHundred );
 
-                    setTimeout(() => {
-                        requestAnimationFrame(noiseDettector);
-                    }, 2000); // 500ms delay
+                    requestAnimationFrame(noiseDetector);
+                    saveVolume(volume)
+
                 }
 
-                noiseDettector();
+                noiseDetector();
+
             })
             .catch(err => console.log("microphone access denied: ", err));
 
