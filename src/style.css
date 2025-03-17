@@ -1,0 +1,86 @@
+body
+{
+    background-color: #0D1117 ;
+}
+
+:root
+{
+    --noise: 0deg;
+    --border_width: 8px;
+    --border_color:greenyellow;
+}
+
+.welcomeText
+{
+    color: white;
+    font-weight: bolder;
+    font-size: xx-large;
+    text-align: center;
+}
+
+p
+{
+    color: white;
+}
+
+.container
+{
+    width: 25%;
+    height: 600px;
+    /* border: 2px solid white; */
+    justify-self: center;
+}
+
+.halfCircle
+{
+    width: 95%;
+    aspect-ratio: 1/1;
+    /* border: var(--border_width) solid var(--border_color);  */
+    border: var(--border_width) solid; 
+    border-radius: 50%;
+}
+
+img
+{
+    width: 50%;
+    aspect-ratio: 1/1;
+    position: relative;
+    top: 28%;
+    left: 0%;
+    z-index: 10;
+    transform-origin:right;
+    transform: rotateZ(var(--noise));
+    transition: all ;
+}
+
+.bottomHalf
+{
+    width: 98.2%;
+    height: 150px;
+    background-color: #0D1117;
+    z-index: 5;
+    position: relative;
+    bottom: 150px;
+    border-top: var(--border_width) solid #ccc;
+    margin-left: 0.6%;
+    display: flex;
+    justify-content: space-between;
+}
+
+#note
+{
+    z-index: 6;
+    position: relative;
+    bottom: 40%;
+    text-align: center;
+}
+
+@media (max-width:760px) {
+   
+    .container
+    {
+        width: 70%;
+        height: 400px;
+    }
+    
+}
